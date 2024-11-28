@@ -8,6 +8,7 @@
 
 #include "engine.h"
 #include "file_utility.h"
+#include "free_camera.h"
 #include "scene.h"
 #include "texture_loader.h"
 
@@ -19,6 +20,7 @@ namespace gpr5300
         void Begin() override;
         void End() override;
         void Update(float dt) override;
+        void OnEvent(const SDL_Event& event) override;
 
     private:
         GLuint vertexShader_ = 0;
@@ -30,12 +32,16 @@ namespace gpr5300
         unsigned int texture_;
 
         float elapsedTime_ = 0.0f;
+        float dt_ = 0.0f;
 
         glm::vec3 cubePositions[10] = {};
+
+        FreeCamera* camera_ = nullptr;
     };
 
     void HelloTriangle::Begin()
     {
+        camera_ = new FreeCamera();
         TextureManager texture_manager;
         texture_ = texture_manager.CreateTexture("data/textures/container.jpg");
 
@@ -183,6 +189,7 @@ namespace gpr5300
 
     void HelloTriangle::Update(float dt)
     {
+        dt_ = dt;
         elapsedTime_ += dt;
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer now!
@@ -192,7 +199,9 @@ namespace gpr5300
         glm::mat4 view          = glm::mat4(1.0f);
         glm::mat4 projection    = glm::mat4(1.0f);
         model = glm::rotate(model, elapsedTime_, glm::vec3(0.5f, 1.0f, 0.0f));
-        view  = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+        camera_->view_ = glm::lookAt(camera_->camera_position_, camera_->camera_position_ + camera_->camera_front_, camera_->camera_up_);
+        view  = camera_->view_;
+
         projection = glm::perspective(glm::radians(45.0f), (float)1280 / (float)720, 0.1f, 100.0f);
         // retrieve the matrix uniform locations
 
@@ -223,13 +232,38 @@ namespace gpr5300
         }
         glBindVertexArray(0);
     }
-}
 
-int main(int argc, char** argv)
-{
-    gpr5300::HelloTriangle scene;
-    gpr5300::Engine engine(&scene);
-    engine.Run();
+    void HelloTriangle::OnEvent(const SDL_Event& event)
+    {
+        // Get keyboard state
+        const Uint8* state = SDL_GetKeyboardState(NULL);
 
-    return EXIT_SUCCESS;
+        // Camera movement speed
+        float cameraSpeed = 5.0f * dt_;
+
+        // Camera controls
+        if (state[SDL_SCANCODE_W]) {
+            camera_->camera_position_ += cameraSpeed * camera_->camera_front_;
+        }
+        if (state[SDL_SCANCODE_S]) {
+            camera_->camera_position_ -= cameraSpeed * camera_->camera_front_;
+        }
+        if (state[SDL_SCANCODE_A]) {
+            camera_->camera_position_ -= glm::normalize(glm::cross(camera_->camera_front_, camera_->camera_up_)) * cameraSpeed;
+        }
+        if (state[SDL_SCANCODE_D]) {
+            camera_->camera_position_ += glm::normalize(glm::cross(camera_->camera_front_, camera_->camera_up_)) * cameraSpeed;
+        }
+
+    }
+
+    }
+
+    int main(int argc, char** argv)
+    {
+        gpr5300::HelloTriangle scene;
+        gpr5300::Engine engine(&scene);
+        engine.Run();
+
+        return EXIT_SUCCESS;
 }
