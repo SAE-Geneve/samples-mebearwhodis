@@ -70,7 +70,7 @@ namespace gpr5300
 
             //Generate new ImGui frame
             ImGui_ImplOpenGL3_NewFrame();
-            ImGui_ImplSDL2_NewFrame(window_);
+            ImGui_ImplSDL2_NewFrame();
             ImGui::NewFrame();
 
             scene_->DrawImGui();

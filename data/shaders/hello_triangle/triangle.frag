@@ -1,10 +1,13 @@
-#version 310 es
+#version 300 es
 precision highp float;
 
 in vec3 fragColor;
+in vec2 TexCoord;
 
 layout(location = 0) out vec4 outColor;
 
+uniform sampler2D ourTexture;
+
 void main() {
-    outColor = vec4(fragColor, 1.0);
+    outColor = texture(ourTexture, TexCoord) * vec4(fragColor, 1.0);
 }

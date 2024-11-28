@@ -82,7 +82,7 @@ file(GLOB_RECURSE DATA_FILES
     )
 
 
-file(GLOB_RECURSE COMMON_FILES src/*.cpp include/*.h)
+file(GLOB_RECURSE COMMON_FILES src/*.cpp src/*.cc include/*.h)
 add_library(Common STATIC ${COMMON_FILES} ${SHADER_FILES})
 target_include_directories(Common PUBLIC include/  ${Stb_INCLUDE_DIR})
 target_link_libraries(Common PUBLIC GLEW::GLEW glm::glm SDL2::SDL2 SDL2::SDL2main imgui::imgui)
