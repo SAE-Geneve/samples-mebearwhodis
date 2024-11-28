@@ -1,4 +1,5 @@
 #include <fstream>
+#include <imgui.h>
 #include <iostream>
 #include <sstream>
 #include <GL/glew.h>
@@ -21,6 +22,7 @@ namespace gpr5300
         void End() override;
         void Update(float dt) override;
         void OnEvent(const SDL_Event& event) override;
+        void DrawImGui() override;
 
     private:
         GLuint vertexShader_ = 0;
@@ -88,59 +90,59 @@ namespace gpr5300
         glEnable(GL_DEPTH_TEST);
 
         float vertices[] = {
-            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-            0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+            -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+            0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
+            0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+            0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+            -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
 
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-            0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-            0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-            0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-            -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+            -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+            0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+            0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+            0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+            -0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
+            -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
 
-            -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-            -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-            -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+            -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+            -0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+            -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+            -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
 
-            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-            0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-            0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-            0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+            0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+            0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+            0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+            0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+            0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+            0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
 
-            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-            0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-            0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-            0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+            0.5f, -0.5f, -0.5f, 1.0f, 1.0f,
+            0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+            0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+            -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+            -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
 
-            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-            -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-            };
+            -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+            0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+            0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+            0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+            -0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
+            -0.5f, 0.5f, -0.5f, 0.0f, 1.0f
+        };
 
-        cubePositions[0] = glm::vec3( 0.0f,  0.0f,  0.0f);
-        cubePositions[1] = glm::vec3( 2.0f,  5.0f, -15.0f);
+        cubePositions[0] = glm::vec3(0.0f, 0.0f, 0.0f);
+        cubePositions[1] = glm::vec3(2.0f, 5.0f, -15.0f);
         cubePositions[2] = glm::vec3(-1.5f, -2.2f, -2.5f);
         cubePositions[3] = glm::vec3(-3.8f, -2.0f, -12.3f);
-        cubePositions[4] = glm::vec3( 2.4f, -0.4f, -3.5f);
-        cubePositions[5] = glm::vec3(-1.7f,  3.0f, -7.5f);
-        cubePositions[6] = glm::vec3( 1.3f, -2.0f, -2.5f);
-        cubePositions[7] = glm::vec3( 1.5f,  2.0f, -2.5f);
-        cubePositions[8] = glm::vec3( 1.5f,  0.2f, -1.5f);
-        cubePositions[9] = glm::vec3(-1.3f,  1.0f, -1.5f);
+        cubePositions[4] = glm::vec3(2.4f, -0.4f, -3.5f);
+        cubePositions[5] = glm::vec3(-1.7f, 3.0f, -7.5f);
+        cubePositions[6] = glm::vec3(1.3f, -2.0f, -2.5f);
+        cubePositions[7] = glm::vec3(1.5f, 2.0f, -2.5f);
+        cubePositions[8] = glm::vec3(1.5f, 0.2f, -1.5f);
+        cubePositions[9] = glm::vec3(-1.3f, 1.0f, -1.5f);
 
         unsigned int indices[] = {
             0, 1, 3,
@@ -195,12 +197,13 @@ namespace gpr5300
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer now!
 
         // Create transformations
-        glm::mat4 model         = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-        glm::mat4 view          = glm::mat4(1.0f);
-        glm::mat4 projection    = glm::mat4(1.0f);
+        glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+        glm::mat4 view = glm::mat4(1.0f);
+        glm::mat4 projection = glm::mat4(1.0f);
         model = glm::rotate(model, elapsedTime_, glm::vec3(0.5f, 1.0f, 0.0f));
-        camera_->view_ = glm::lookAt(camera_->camera_position_, camera_->camera_position_ + camera_->camera_front_, camera_->camera_up_);
-        view  = camera_->view_;
+        camera_->view_ = glm::lookAt(camera_->camera_position_, camera_->camera_position_ + camera_->camera_front_,
+                                     camera_->camera_up_);
+        view = camera_->view_;
 
         projection = glm::perspective(glm::radians(45.0f), (float)1280 / (float)720, 0.1f, 100.0f);
         // retrieve the matrix uniform locations
@@ -242,28 +245,39 @@ namespace gpr5300
         float cameraSpeed = 5.0f * dt_;
 
         // Camera controls
-        if (state[SDL_SCANCODE_W]) {
+        if (state[SDL_SCANCODE_W])
+        {
             camera_->camera_position_ += cameraSpeed * camera_->camera_front_;
         }
-        if (state[SDL_SCANCODE_S]) {
+        if (state[SDL_SCANCODE_S])
+        {
             camera_->camera_position_ -= cameraSpeed * camera_->camera_front_;
         }
-        if (state[SDL_SCANCODE_A]) {
-            camera_->camera_position_ -= glm::normalize(glm::cross(camera_->camera_front_, camera_->camera_up_)) * cameraSpeed;
+        if (state[SDL_SCANCODE_A])
+        {
+            camera_->camera_position_ -= glm::normalize(glm::cross(camera_->camera_front_, camera_->camera_up_)) *
+                cameraSpeed;
         }
-        if (state[SDL_SCANCODE_D]) {
-            camera_->camera_position_ += glm::normalize(glm::cross(camera_->camera_front_, camera_->camera_up_)) * cameraSpeed;
+        if (state[SDL_SCANCODE_D])
+        {
+            camera_->camera_position_ += glm::normalize(glm::cross(camera_->camera_front_, camera_->camera_up_)) *
+                cameraSpeed;
         }
-
     }
 
-    }
-
-    int main(int argc, char** argv)
+    void HelloTriangle::DrawImGui()
     {
-        gpr5300::HelloTriangle scene;
-        gpr5300::Engine engine(&scene);
-        engine.Run();
+        ImGui::Begin("My Window"); // Start a new window
+        ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
+        ImGui::End(); // End the window
+    }
+}
 
-        return EXIT_SUCCESS;
+int main(int argc, char** argv)
+{
+    gpr5300::HelloTriangle scene;
+    gpr5300::Engine engine(&scene);
+    engine.Run();
+
+    return EXIT_SUCCESS;
 }

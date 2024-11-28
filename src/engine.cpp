@@ -60,9 +60,9 @@ namespace gpr5300
                 default:
                     break;
                 }
-                scene_->OnEvent(event);
                 ImGui_ImplSDL2_ProcessEvent(&event);
             }
+            scene_->OnEvent(event);
             glClearColor(0, 0, 0, 0);
             glClear(GL_COLOR_BUFFER_BIT);
 
