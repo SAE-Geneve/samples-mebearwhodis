@@ -31,6 +31,7 @@ namespace gpr5300
 
         float elapsedTime_ = 0.0f;
 
+        glm::vec3 cubePositions[10] = {};
     };
 
     void HelloTriangle::Begin()
@@ -124,6 +125,17 @@ namespace gpr5300
             -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
             };
 
+        cubePositions[0] = glm::vec3( 0.0f,  0.0f,  0.0f);
+        cubePositions[1] = glm::vec3( 2.0f,  5.0f, -15.0f);
+        cubePositions[2] = glm::vec3(-1.5f, -2.2f, -2.5f);
+        cubePositions[3] = glm::vec3(-3.8f, -2.0f, -12.3f);
+        cubePositions[4] = glm::vec3( 2.4f, -0.4f, -3.5f);
+        cubePositions[5] = glm::vec3(-1.7f,  3.0f, -7.5f);
+        cubePositions[6] = glm::vec3( 1.3f, -2.0f, -2.5f);
+        cubePositions[7] = glm::vec3( 1.5f,  2.0f, -2.5f);
+        cubePositions[8] = glm::vec3( 1.5f,  0.2f, -1.5f);
+        cubePositions[9] = glm::vec3(-1.3f,  1.0f, -1.5f);
+
         unsigned int indices[] = {
             0, 1, 3,
             1, 2, 3
@@ -185,11 +197,9 @@ namespace gpr5300
         // retrieve the matrix uniform locations
 
         // Pass transformations to shaders
-        unsigned int modelLoc = glGetUniformLocation(program_, "model");
         unsigned int viewLoc = glGetUniformLocation(program_, "view");
         unsigned int projectionLoc = glGetUniformLocation(program_, "projection");
 
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
@@ -198,7 +208,19 @@ namespace gpr5300
         glBindTexture(GL_TEXTURE_2D, texture_);
         //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(vao_);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        //glDrawArrays(GL_TRIANGLES, 0, 36);
+        for (unsigned int i = 0; i < 10; i++)
+        {
+            // calculate the model matrix for each object and pass it to shader before drawing
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, cubePositions[i]);
+            float angle = 20.0f * i;
+            model = glm::rotate(model, glm::radians(angle) + elapsedTime_, glm::vec3(1.0f, 0.3f, 0.5f));
+            unsigned int modelLoc = glGetUniformLocation(program_, "model");
+            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
         glBindVertexArray(0);
     }
 }
