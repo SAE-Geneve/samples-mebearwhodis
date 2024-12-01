@@ -97,7 +97,7 @@ else()
 
 endif()
 
-file(GLOB MAIN_FILES main/*.cpp)
+file(GLOB MAIN_FILES main/*.cpp main/*.cc)
 foreach(MAIN_FILE ${MAIN_FILES})
     get_filename_component(MAIN_NAME ${MAIN_FILE} NAME_WE)
     

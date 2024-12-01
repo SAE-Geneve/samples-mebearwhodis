@@ -57,12 +57,18 @@ namespace gpr5300
                     }
                     break;
                 }
+                    case SDL_KEYDOWN:
+                        if(event.key.keysym.sym == SDLK_ESCAPE)
+                            {
+                                isOpen = false;
+                            }
+                    break;
                 default:
                     break;
                 }
                 ImGui_ImplSDL2_ProcessEvent(&event);
             }
-            scene_->OnEvent(event);
+            scene_->OnEvent(event, dt.count());
             glClearColor(0, 0, 0, 0);
             glClear(GL_COLOR_BUFFER_BIT);
 
@@ -109,6 +115,8 @@ namespace gpr5300
             SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL
         );
         glRenderContext_ = SDL_GL_CreateContext(window_);
+        SDL_ShowCursor(SDL_DISABLE);
+        SDL_SetRelativeMouseMode(SDL_TRUE);
         //setting vsync
         SDL_GL_SetSwapInterval(1);
 
