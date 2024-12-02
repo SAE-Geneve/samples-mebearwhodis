@@ -21,14 +21,16 @@ struct FreeCamera {
 
     glm::mat4 view_ = glm::lookAt(camera_position_, camera_position_ + camera_front_, camera_up_);
     glm::vec3 direction_;
-    float yaw_ = -90.0f;
+    float yaw_ = 90.0f;
     float pitch_ = 0.0f;
     float sensitivity_ = 0.1f;
 
     float camera_speed_ = 5.0f;
 
+
     void Update(const int x_yaw, const int y_pitch)
     {
+
         yaw_ += static_cast<float>(x_yaw) * sensitivity_;
         pitch_ -= static_cast<float>(y_pitch) * sensitivity_;
         if(pitch_ > 89.0f)
@@ -70,6 +72,7 @@ struct FreeCamera {
         {
             camera_position_ -= world_up_ * speed;
         }
+        view_ = glm::lookAt(camera_position_, camera_position_ + camera_front_, camera_up_);
     }
 
     glm::mat4 view() const { return view_;}

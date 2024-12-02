@@ -38,30 +38,44 @@ namespace gpr5300
                     isOpen = false;
                     break;
                 case SDL_WINDOWEVENT:
-                {
-                    switch (event.window.event)
                     {
-                    case SDL_WINDOWEVENT_CLOSE:
-                        isOpen = false;
-                        break;
-                    case SDL_WINDOWEVENT_RESIZED:
-                    {
-                        glm::uvec2 newWindowSize;
-                        newWindowSize.x = event.window.data1;
-                        newWindowSize.y = event.window.data2;
-                        //TODO do something with the new size
+                        switch (event.window.event)
+                        {
+                        case SDL_WINDOWEVENT_CLOSE:
+                            isOpen = false;
+                            break;
+                        case SDL_WINDOWEVENT_RESIZED:
+                            {
+                                glm::uvec2 newWindowSize;
+                                newWindowSize.x = event.window.data1;
+                                newWindowSize.y = event.window.data2;
+                                //TODO do something with the new size
+                                break;
+                            }
+                        default:
+                            break;
+                        }
                         break;
                     }
-                    default:
-                        break;
+                case SDL_KEYDOWN:
+                    if (event.key.keysym.sym == SDLK_ESCAPE)
+                    {
+                        isOpen = false;
                     }
                     break;
-                }
-                    case SDL_KEYDOWN:
-                        if(event.key.keysym.sym == SDLK_ESCAPE)
-                            {
-                                isOpen = false;
-                            }
+                case SDL_MOUSEBUTTONDOWN:
+                    if (event.button.button == SDL_BUTTON_LEFT)
+                    {
+                        SDL_ShowCursor(SDL_DISABLE);
+                        SDL_SetRelativeMouseMode(SDL_TRUE);
+                    }
+                    break;
+                    case SDL_MOUSEBUTTONUP:
+                        if (event.button.button == SDL_BUTTON_LEFT)
+                        {
+                            SDL_ShowCursor(SDL_ENABLE);
+                            SDL_SetRelativeMouseMode(SDL_FALSE);
+                        }
                     break;
                 default:
                     break;
@@ -90,7 +104,6 @@ namespace gpr5300
 
     void Engine::Begin()
     {
-
         SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER);
         // Set our OpenGL version.
 #if true
@@ -105,7 +118,7 @@ namespace gpr5300
 
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-        constexpr auto windowSize = glm::ivec2(1280,720);
+        constexpr auto windowSize = glm::ivec2(1280, 720);
         window_ = SDL_CreateWindow(
             "GPR5300",
             SDL_WINDOWPOS_UNDEFINED,
@@ -115,8 +128,6 @@ namespace gpr5300
             SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL
         );
         glRenderContext_ = SDL_GL_CreateContext(window_);
-        SDL_ShowCursor(SDL_DISABLE);
-        SDL_SetRelativeMouseMode(SDL_TRUE);
         //setting vsync
         SDL_GL_SetSwapInterval(1);
 
@@ -131,8 +142,8 @@ namespace gpr5300
         ImGuiIO& io = ImGui::GetIO();
         (void)io;
 
-        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
-        io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Keyboard Gamepad
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad; // Enable Keyboard Gamepad
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
         // Setup Dear ImGui style

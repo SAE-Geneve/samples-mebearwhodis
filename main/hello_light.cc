@@ -35,12 +35,14 @@ namespace gpr5300
         GLuint vbo_ = 0;
         GLuint ebo_ = 0;
         GLuint light_vao_ = 0;
-        unsigned int texture_;
+        unsigned int diffuse_map_;
+        unsigned int specular_map_;
 
         float elapsedTime_ = 0.0f;
 
         glm::vec3 cubePositions[10] = {};
         glm::vec3 light_position_ = glm::vec3(1.2f, 1.0f, 2.0f);
+        glm::vec3 light_colour_ = glm::vec3(1.0f, 1.0f, 1.0f);
 
         FreeCamera* camera_ = nullptr;
     };
@@ -49,7 +51,8 @@ namespace gpr5300
     {
         camera_ = new FreeCamera();
         TextureManager texture_manager;
-        texture_ = texture_manager.CreateTexture("data/textures/container.jpg");
+        diffuse_map_ = texture_manager.CreateTexture("data/textures/container2.png");
+        specular_map_ = texture_manager.CreateTexture("data/textures/container2_specular.png");
 
 
         //Main program
@@ -133,49 +136,50 @@ namespace gpr5300
         // -----------------------------
         glEnable(GL_DEPTH_TEST);
 
-        float vertices[] = {
-            -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,  0.0f, -1.0f,
-            0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,  0.0f, -1.0f,
-            0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 0.0f,  0.0f, -1.0f,
-            0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 0.0f,  0.0f, -1.0f,
-            -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,  0.0f, -1.0f,
-            -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,  0.0f, -1.0f,
+    float vertices[] = {
+    // positions          // normals           // texture coords
+    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
+     0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
 
-            -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 0.0f,  0.0f, 1.0f,
-            0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f,  0.0f, 1.0f,
-            0.5f, 0.5f, 0.5f, 1.0f, 1.0f, 0.0f,  0.0f, 1.0f,
-            0.5f, 0.5f, 0.5f, 1.0f, 1.0f, 0.0f,  0.0f, 1.0f,
-            -0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f,  0.0f, 1.0f,
-            -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 0.0f,  0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
+     0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
 
-            -0.5f, 0.5f, 0.5f, 1.0f, 0.0f, -1.0f,  0.0f,  0.0f,
-            -0.5f, 0.5f, -0.5f, 1.0f, 1.0f, -1.0f,  0.0f,  0.0f,
-            -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, -1.0f,  0.0f,  0.0f,
-            -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, -1.0f,  0.0f,  0.0f,
-            -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, -1.0f,  0.0f,  0.0f,
-            -0.5f, 0.5f, 0.5f, 1.0f, 0.0f, -1.0f,  0.0f,  0.0f,
+    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
 
-            0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 1.0f,  0.0f,  0.0f,
-            0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 1.0f,  0.0f,  0.0f,
-            0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 1.0f,  0.0f,  0.0f,
-            0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 1.0f,  0.0f,  0.0f,
-            0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f,  0.0f,  0.0f,
-            0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 1.0f,  0.0f,  0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
 
-            -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, -1.0f,  0.0f,
-            0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f, -1.0f,  0.0f,
-            0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f, -1.0f,  0.0f,
-            0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f, -1.0f,  0.0f,
-            -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, -1.0f,  0.0f,
-            -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, -1.0f,  0.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
+     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
 
-            -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,  1.0f,  0.0f,
-            0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 0.0f,  1.0f,  0.0f,
-            0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f,  1.0f,  0.0f,
-            0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f,  1.0f,  0.0f,
-            -0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 0.0f,  1.0f,  0.0f,
-            -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,  1.0f,  0.0f
-        };
+    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
+};
 
         cubePositions[0] = glm::vec3(0.0f, 0.0f, 0.0f);
         cubePositions[1] = glm::vec3(2.0f, 5.0f, -15.0f);
@@ -214,13 +218,14 @@ namespace gpr5300
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
 
-        // TexCoord attribute
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+        // normal attribute
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
         glEnableVertexAttribArray(1);
 
-        // normal attribute
-        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
+        // TexCoord attribute
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
         glEnableVertexAttribArray(2);
+
 
         // Light
         glGenVertexArrays(1, &light_vao_);
@@ -269,15 +274,24 @@ namespace gpr5300
         // Pass transformations to shaders TODO: factorize
         unsigned int viewLoc = glGetUniformLocation(program_, "view");
         unsigned int projectionLoc = glGetUniformLocation(program_, "projection");
-        unsigned int lightColorLoc = glGetUniformLocation(program_, "lightColor");
-        unsigned int lightPosLoc = glGetUniformLocation(program_, "lightPos");
         unsigned int viewPosLoc = glGetUniformLocation(program_, "viewPos");
 
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-        glUniform3f(lightColorLoc, 1.0f, 0.0f, 1.0f);
-        glUniform3f(lightPosLoc, light_position_.x, light_position_.y, light_position_.z);
         glUniform3f(viewPosLoc, view_pos.x, view_pos.y, view_pos.z);
+
+        //Light
+        glUniform3f(glGetUniformLocation(program_, "light.position"), light_position_.x, light_position_.y, light_position_.z);
+        glUniform3f(glGetUniformLocation(program_, "light.ambient"), 0.2f, 0.2f, 0.2f);
+        glUniform3f(glGetUniformLocation(program_, "light.diffuse"), light_colour_.r, light_colour_.g, light_colour_.b);
+        glUniform3f(glGetUniformLocation(program_, "light.specular"), 1.0f, 1.0f, 1.0f);
+
+        //Material
+        glUniform3f(glGetUniformLocation(program_, "material.ambient"), 1.0f, 0.5f, 0.31f);
+        glUniform3f(glGetUniformLocation(program_, "material.diffuse"), 1.0f, 0.5f, 0.31f);
+        glUniform3f(glGetUniformLocation(program_, "material.specular"), 0.5f, 0.5f, 0.5f);
+        glUniform1f(glGetUniformLocation(program_, "material.shininess"), 32.0f);
+
 
 
 
@@ -290,6 +304,7 @@ namespace gpr5300
 
         glUniformMatrix4fv(light_viewLoc, 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(light_projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+        glUniform3f(glGetUniformLocation(light_program_, "lightColour"), light_colour_.r, light_colour_.g, light_colour_.b);
 
         glm::mat4 light_model = glm::mat4(1.0f);
         light_model = glm::translate(light_model, light_position_);
@@ -305,7 +320,15 @@ namespace gpr5300
 
         //Draw cubes
         glUseProgram(program_);
-        glBindTexture(GL_TEXTURE_2D, texture_);
+
+        glUniform1i(glGetUniformLocation(program_, "material.diffuse"), 0);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, diffuse_map_);
+
+        glUniform1i(glGetUniformLocation(program_, "material.specular"), 1);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, specular_map_);
+
         for (unsigned int i = 0; i < 10; i++)
         {
             // calculate the model matrix for each object and pass it to shader before drawing
@@ -357,14 +380,19 @@ namespace gpr5300
         }
 
         int mouseX, mouseY;
-        SDL_GetRelativeMouseState(&mouseX, &mouseY);
+        const Uint32 mouseState = SDL_GetRelativeMouseState(&mouseX, &mouseY);
+        if (mouseState & SDL_BUTTON(SDL_BUTTON_LEFT) && !ImGui::GetIO().WantCaptureMouse)
+        {
         camera_->Update(mouseX, mouseY);
+        }
     }
 
     void HelloLight::DrawImGui()
     {
         ImGui::Begin("My Window"); // Start a new window
-        ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
+        //ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
+        static ImVec4 LightColour = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);  // Default color
+        ImGui::ColorPicker3("Light Colour", reinterpret_cast<float*>(&light_colour_));
         ImGui::End(); // End the window
     }
 }
