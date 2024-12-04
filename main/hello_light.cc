@@ -21,8 +21,9 @@ namespace gpr5300
         void Begin() override;
         void End() override;
         void Update(float dt) override;
-        void OnEvent(const SDL_Event& event, const float dt) override;
+        void OnEvent(const SDL_Event& event) override;
         void DrawImGui() override;
+        void UpdateCamera(const float dt) override;
 
     private:
         GLuint vertexShader_ = 0;
@@ -263,6 +264,7 @@ namespace gpr5300
 
     void HelloLight::Update(const float dt)
     {
+        UpdateCamera(dt);
         elapsedTime_ += dt;
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer now!
@@ -401,7 +403,12 @@ namespace gpr5300
         glBindVertexArray(0);
     }
 
-    void HelloLight::OnEvent(const SDL_Event& event, const float dt)
+    void HelloLight::OnEvent(const SDL_Event& event)
+    {
+        //TODO: Add zoom
+    }
+
+    void HelloLight::UpdateCamera(const float dt)
     {
         // Get keyboard state
         const Uint8* state = SDL_GetKeyboardState(NULL);
@@ -439,6 +446,7 @@ namespace gpr5300
             camera_->Update(mouseX, mouseY);
         }
     }
+
 
     void HelloLight::DrawImGui()
     {

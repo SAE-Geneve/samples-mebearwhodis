@@ -22,8 +22,9 @@ namespace gpr5300
         void Begin() override;
         void End() override;
         void Update(float dt) override;
-        void OnEvent(const SDL_Event& event, const float dt) override;
+        void OnEvent(const SDL_Event& event) override;
         void DrawImGui() override;
+        void UpdateCamera(const float dt) override;
 
     private:
         GLuint vertexShader_ = 0;
@@ -265,9 +266,10 @@ namespace gpr5300
 
     void HelloModel::Update(const float dt)
     {
+        UpdateCamera(dt);
         elapsedTime_ += dt;
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer now!
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer
 
         glUseProgram(program_);
 
@@ -359,7 +361,7 @@ namespace gpr5300
         glUniform1i(glGetUniformLocation(program_, "material.diffuse"), 0);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, diffuse_map_);
-        model = glm::translate(model, glm::vec3(0.0f, 10.0f, 0.0f)); // translate it down so it's at the center of the scene
+        model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
         model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
         glUniformMatrix4fv(glGetUniformLocation(program_, "model"), 1, GL_FALSE, glm::value_ptr(model));
         model_.Draw(program_);
@@ -415,7 +417,12 @@ namespace gpr5300
         glBindVertexArray(0);
     }
 
-    void HelloModel::OnEvent(const SDL_Event& event, const float dt)
+    void HelloModel::OnEvent(const SDL_Event& event)
+    {
+        //TODO: Add zoom
+    }
+
+    void HelloModel::UpdateCamera(const float dt)
     {
         // Get keyboard state
         const Uint8* state = SDL_GetKeyboardState(NULL);
