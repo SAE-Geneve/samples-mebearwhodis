@@ -389,10 +389,10 @@ namespace gpr5300
                     light_colour_.b);
 
         glBindVertexArray(light_vao_);
-        for (unsigned int i = 0; i < 4; i++)
+        for (auto pointLightPosition : pointLightPositions)
         {
-            glm::mat4 light_model = glm::mat4(1.0f);
-            light_model = glm::translate(light_model, pointLightPositions[i]);
+            auto light_model = glm::mat4(1.0f);
+            light_model = glm::translate(light_model, pointLightPosition);
             light_model = glm::scale(light_model, glm::vec3(0.2f));
 
             glUniformMatrix4fv(glGetUniformLocation(light_program_, "light_model"), 1, GL_FALSE,
