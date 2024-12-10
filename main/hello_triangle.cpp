@@ -286,11 +286,11 @@ namespace gpr5300
     }
 }
 
-// int main(int argc, char** argv)
-// {
-//     gpr5300::HelloTriangle scene;
-//     gpr5300::Engine engine(&scene);
-//     engine.Run();
-//
-//     return EXIT_SUCCESS;
-// }
+int main(int argc, char* argv[])
+{
+    gpr5300::HelloTriangle scene;
+    gpr5300::Engine engine(&scene);
+    engine.Run();
+
+    return EXIT_SUCCESS;
+}

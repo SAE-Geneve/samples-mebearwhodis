@@ -36,8 +36,8 @@ namespace gpr5300
         GLuint vbo_ = 0;
         GLuint ebo_ = 0;
         GLuint light_vao_ = 0;
-        unsigned int diffuse_map_;
-        unsigned int specular_map_;
+        unsigned int diffuse_map_ = 0;
+        unsigned int specular_map_ = 0;
 
         float elapsedTime_ = 0.0f;
 
@@ -458,11 +458,11 @@ namespace gpr5300
     }
 }
 
-// int main(int argc, char** argv)
-// {
-//     gpr5300::HelloLight scene;
-//     gpr5300::Engine engine(&scene);
-//     engine.Run();
-//
-//     return EXIT_SUCCESS;
-// }
+int main(int argc, char* argv[])
+{
+    gpr5300::HelloLight scene;
+    gpr5300::Engine engine(&scene);
+    engine.Run();
+
+    return EXIT_SUCCESS;
+}

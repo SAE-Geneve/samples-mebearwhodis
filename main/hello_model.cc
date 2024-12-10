@@ -471,7 +471,7 @@ namespace gpr5300
     }
 }
 
-int main(int argc, char** argv)
+int main(int argc, char* argv[])
 {
     gpr5300::HelloModel scene;
     gpr5300::Engine engine(&scene);
