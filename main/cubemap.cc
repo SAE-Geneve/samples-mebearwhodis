@@ -1,5 +1,4 @@
-﻿
-#include <fstream>
+﻿#include <fstream>
 #include <imgui.h>
 #include <iostream>
 #include <map>
@@ -14,6 +13,7 @@
 #include "free_camera.h"
 #include "model.h"
 #include "scene.h"
+#include "shader.h"
 #include "texture_loader.h"
 
 namespace gpr5300
@@ -29,11 +29,11 @@ namespace gpr5300
         void UpdateCamera(const float dt) override;
 
     private:
-        GLuint program_ = 0;
+        Shader program_ = {};
         GLuint vertexShader_ = 0;
         GLuint fragmentShader_ = 0;
 
-        GLuint skybox_program_ = 0;
+        Shader skybox_program_ = {};
         GLuint skybox_vertexShader_ = 0;
         GLuint skybox_fragmentShader_ = 0;
 
@@ -52,7 +52,7 @@ namespace gpr5300
 
         float elapsedTime_ = 0.0f;
 
-        float cube_vertices_[180] = {};
+        float cube_vertices_[216] = {};
         float plane_vertices_[30] = {};
         float skybox_vertices_[108] = {};
 
@@ -64,89 +64,15 @@ namespace gpr5300
         camera_ = new FreeCamera();
 
         //Main program
-
-        //Load shaders
-        auto vertexContent = LoadFile("data/shaders/depth_testing/depth.vert");
-        const auto* ptr = vertexContent.data();
-        vertexShader_ = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(vertexShader_, 1, &ptr, nullptr);
-        glCompileShader(vertexShader_);
-        //Check success status of shader compilation
-        GLint success;
-        glGetShaderiv(vertexShader_, GL_COMPILE_STATUS, &success);
-        if (!success)
-        {
-            std::cerr << "Error while loading vertex shader\n";
-        }
-
-        auto fragmentContent = LoadFile("data/shaders/depth_testing/depth.frag");
-        ptr = fragmentContent.data();
-        fragmentShader_ = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(fragmentShader_, 1, &ptr, nullptr);
-        glCompileShader(fragmentShader_);
-        //Check success status of shader compilation
-
-        glGetShaderiv(fragmentShader_, GL_COMPILE_STATUS, &success);
-        if (!success)
-        {
-            std::cerr << "Error while loading fragment shader\n";
-        }
-        //Load program/pipeline
-        program_ = glCreateProgram();
-        glAttachShader(program_, vertexShader_);
-        glAttachShader(program_, fragmentShader_);
-        glLinkProgram(program_);
-        //Check if shader program was linked correctly
-        glGetProgramiv(program_, GL_LINK_STATUS, &success);
-        if (!success)
-        {
-            std::cerr << "Error while linking shader program\n";
-        }
-
-
-        auto screen_vertexContent = LoadFile("data/shaders/cubemaps/cubemaps.vert");
-        const auto* screen_ptr = screen_vertexContent.data();
-        skybox_vertexShader_ = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(skybox_vertexShader_, 1, &screen_ptr, nullptr);
-        glCompileShader(skybox_vertexShader_);
-        //Check success status of shader compilation
-        GLint screen_success;
-        glGetShaderiv(skybox_vertexShader_, GL_COMPILE_STATUS, &screen_success);
-        if (!screen_success)
-        {
-            std::cerr << "Error while loading vertex shader\n";
-        }
-
-        auto screen_fragmentContent = LoadFile("data/shaders/cubemaps/cubemaps.frag");
-        screen_ptr = screen_fragmentContent.data();
-        skybox_fragmentShader_ = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(skybox_fragmentShader_, 1, &screen_ptr, nullptr);
-        glCompileShader(skybox_fragmentShader_);
-        //Check success status of shader compilation
-
-        glGetShaderiv(skybox_fragmentShader_, GL_COMPILE_STATUS, &screen_success);
-        if (!screen_success)
-        {
-            std::cerr << "Error while loading fragment shader\n";
-        }
-        //Load program/pipeline
-        skybox_program_ = glCreateProgram();
-        glAttachShader(skybox_program_, skybox_vertexShader_);
-        glAttachShader(skybox_program_, skybox_fragmentShader_);
-        glLinkProgram(skybox_program_);
-        //Check if shader program was linked correctly
-        glGetProgramiv(skybox_program_, GL_LINK_STATUS, &screen_success);
-        if (!screen_success)
-        {
-            std::cerr << "Error while linking shader program\n";
-        }
+        program_ = Shader("data/shaders/cubemaps/reflection.vert", "data/shaders/cubemaps/reflection.frag");
+        skybox_program_ = Shader("data/shaders/cubemaps/cubemaps.vert", "data/shaders/cubemaps/cubemaps.frag");
 
 
         // Configure global opengl state
         // -----------------------------
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
-        glEnable(GL_CULL_FACE);
+        // glEnable(GL_CULL_FACE);
         // glCullFace(GL_FRONT);
 
         // set up vertex data (and buffer(s)) and configure vertex attributes
@@ -162,48 +88,52 @@ namespace gpr5300
         */
 
         float cubeVertices[] = {
-            // Back face
-            -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, // Bottom-left
-            0.5f, 0.5f, -0.5f, 1.0f, 1.0f, // top-right
-            0.5f, -0.5f, -0.5f, 1.0f, 0.0f, // bottom-right
-            0.5f, 0.5f, -0.5f, 1.0f, 1.0f, // top-right
-            -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, // bottom-left
-            -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, // top-left
-            // Front face
-            -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, // bottom-left
-            0.5f, -0.5f, 0.5f, 1.0f, 0.0f, // bottom-right
-            0.5f, 0.5f, 0.5f, 1.0f, 1.0f, // top-right
-            0.5f, 0.5f, 0.5f, 1.0f, 1.0f, // top-right
-            -0.5f, 0.5f, 0.5f, 0.0f, 1.0f, // top-left
-            -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, // bottom-left
-            // Left face
-            -0.5f, 0.5f, 0.5f, 1.0f, 0.0f, // top-right
-            -0.5f, 0.5f, -0.5f, 1.0f, 1.0f, // top-left
-            -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // bottom-left
-            -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // bottom-left
-            -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, // bottom-right
-            -0.5f, 0.5f, 0.5f, 1.0f, 0.0f, // top-right
-            // Right face
-            0.5f, 0.5f, 0.5f, 1.0f, 0.0f, // top-left
-            0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // bottom-right
-            0.5f, 0.5f, -0.5f, 1.0f, 1.0f, // top-right
-            0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // bottom-right
-            0.5f, 0.5f, 0.5f, 1.0f, 0.0f, // top-left
-            0.5f, -0.5f, 0.5f, 0.0f, 0.0f, // bottom-left
-            // Bottom face
-            -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // top-right
-            0.5f, -0.5f, -0.5f, 1.0f, 1.0f, // top-left
-            0.5f, -0.5f, 0.5f, 1.0f, 0.0f, // bottom-left
-            0.5f, -0.5f, 0.5f, 1.0f, 0.0f, // bottom-left
-            -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, // bottom-right
-            -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // top-right
-            // Top face
-            -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, // top-left
-            0.5f, 0.5f, 0.5f, 1.0f, 0.0f, // bottom-right
-            0.5f, 0.5f, -0.5f, 1.0f, 1.0f, // top-right
-            0.5f, 0.5f, 0.5f, 1.0f, 0.0f, // bottom-right
-            -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, // top-left
-            -0.5f, 0.5f, 0.5f, 0.0f, 0.0f // bottom-left
+            // positions          // normals
+            -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
+            0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
+            -0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
+            0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
+            -0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
+            0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
+
+
+            -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
+            0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
+            0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
+            0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
+            -0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
+            -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
+
+            -0.5f, 0.5f, 0.5f, -1.0f, 0.0f, 0.0f,
+            -0.5f, 0.5f, -0.5f, -1.0f, 0.0f, 0.0f,
+            -0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f,
+            -0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f,
+            -0.5f, -0.5f, 0.5f, -1.0f, 0.0f, 0.0f,
+            -0.5f, 0.5f, 0.5f, -1.0f, 0.0f, 0.0f,
+
+            0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
+            0.5f, 0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
+            0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f,
+            0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f,
+            0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f,
+            0.5f, 0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
+
+
+            -0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f,
+            -0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f,
+            0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f,
+            0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f,
+            0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f,
+            -0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f,
+
+
+            -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+            0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+            -0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f,
+            0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f,
+            -0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f,
+            0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f
+
         };
         std::ranges::copy(cubeVertices, cube_vertices_);
 
@@ -222,61 +152,61 @@ namespace gpr5300
 
         float skyboxVertices[] = {
             // positions
-            -1.0f,  1.0f, -1.0f,
+            -1.0f, 1.0f, -1.0f,
             -1.0f, -1.0f, -1.0f,
-             1.0f, -1.0f, -1.0f,
-             1.0f, -1.0f, -1.0f,
-             1.0f,  1.0f, -1.0f,
-            -1.0f,  1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+            1.0f, 1.0f, -1.0f,
+            -1.0f, 1.0f, -1.0f,
 
-            -1.0f, -1.0f,  1.0f,
+            -1.0f, -1.0f, 1.0f,
             -1.0f, -1.0f, -1.0f,
-            -1.0f,  1.0f, -1.0f,
-            -1.0f,  1.0f, -1.0f,
-            -1.0f,  1.0f,  1.0f,
-            -1.0f, -1.0f,  1.0f,
+            -1.0f, 1.0f, -1.0f,
+            -1.0f, 1.0f, -1.0f,
+            -1.0f, 1.0f, 1.0f,
+            -1.0f, -1.0f, 1.0f,
 
-             1.0f, -1.0f, -1.0f,
-             1.0f, -1.0f,  1.0f,
-             1.0f,  1.0f,  1.0f,
-             1.0f,  1.0f,  1.0f,
-             1.0f,  1.0f, -1.0f,
-             1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
 
-            -1.0f, -1.0f,  1.0f,
-            -1.0f,  1.0f,  1.0f,
-             1.0f,  1.0f,  1.0f,
-             1.0f,  1.0f,  1.0f,
-             1.0f, -1.0f,  1.0f,
-            -1.0f, -1.0f,  1.0f,
+            -1.0f, -1.0f, 1.0f,
+            -1.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f,
+            1.0f, -1.0f, 1.0f,
+            -1.0f, -1.0f, 1.0f,
 
-            -1.0f,  1.0f, -1.0f,
-             1.0f,  1.0f, -1.0f,
-             1.0f,  1.0f,  1.0f,
-             1.0f,  1.0f,  1.0f,
-            -1.0f,  1.0f,  1.0f,
-            -1.0f,  1.0f, -1.0f,
+            -1.0f, 1.0f, -1.0f,
+            1.0f, 1.0f, -1.0f,
+            1.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f,
+            -1.0f, 1.0f, 1.0f,
+            -1.0f, 1.0f, -1.0f,
 
             -1.0f, -1.0f, -1.0f,
-            -1.0f, -1.0f,  1.0f,
-             1.0f, -1.0f, -1.0f,
-             1.0f, -1.0f, -1.0f,
-            -1.0f, -1.0f,  1.0f,
-             1.0f, -1.0f,  1.0f
+            -1.0f, -1.0f, 1.0f,
+            1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+            -1.0f, -1.0f, 1.0f,
+            1.0f, -1.0f, 1.0f
         };
 
         std::ranges::copy(skyboxVertices, skybox_vertices_);
 
         // cube VAO
         glGenVertexArrays(1, &cube_vao_);
-        glGenBuffers(1, &cube_vbo_);
         glBindVertexArray(cube_vao_);
+        glGenBuffers(1, &cube_vbo_);
         glBindBuffer(GL_ARRAY_BUFFER, cube_vbo_);
         glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertices_), &cube_vertices_, GL_STATIC_DRAW);
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 
         // plane VAO
         glGenVertexArrays(1, &plane_vao_);
@@ -300,14 +230,14 @@ namespace gpr5300
 
 
         std::vector<std::string> faces
-    {
-        "data/textures/skybox/right.jpg",
-        "data/textures/skybox/left.jpg",
-        "data/textures/skybox/top.jpg",
-        "data/textures/skybox/bottom.jpg",
-        "data/textures/skybox/front.jpg",
-        "data/textures/skybox/back.jpg"
-    };
+        {
+            "data/textures/skybox/right.jpg",
+            "data/textures/skybox/left.jpg",
+            "data/textures/skybox/top.jpg",
+            "data/textures/skybox/bottom.jpg",
+            "data/textures/skybox/front.jpg",
+            "data/textures/skybox/back.jpg"
+        };
         // load textures
         // -------------
         cubeTexture = TextureFromFile("container.jpg", "data/textures");
@@ -317,11 +247,11 @@ namespace gpr5300
 
         // shader configuration
         // --------------------
-        glUseProgram(program_);
-        glUniform1i(glGetUniformLocation(program_, "texture1"), 0);
+        program_.Use();
+        program_.SetInt("skybox", 0);
 
-        glUseProgram(skybox_program_);
-        glUniform1i(glGetUniformLocation(skybox_program_, "skybox"), 0);
+        skybox_program_.Use();
+        skybox_program_.SetInt("skybox", 0);
 
         // draw as wireframe
         //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -330,7 +260,8 @@ namespace gpr5300
     void Cubemap::End()
     {
         //Unload program/pipeline
-        glDeleteProgram(program_);
+        program_.Delete();
+        skybox_program_.Delete();
 
         glDeleteShader(vertexShader_);
         glDeleteShader(fragmentShader_);
@@ -345,56 +276,53 @@ namespace gpr5300
         elapsedTime_ += dt;
 
 
-        glEnable(GL_DEPTH_TEST);
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glUseProgram(program_);
+        program_.Use();
 
         auto model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
         auto view = camera_->view();
         auto projection = glm::perspective(glm::radians(45.0f), (float)1280 / (float)720, 0.1f, 100.0f);
 
-        glUniformMatrix4fv(glGetUniformLocation(program_, "view"), 1, GL_FALSE, glm::value_ptr(view));
-        glUniformMatrix4fv(glGetUniformLocation(program_, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-
-        const glm::vec3 view_pos = camera_->camera_position_;
-        glUniform3f(glGetUniformLocation(program_, "viewPos"), view_pos.x, view_pos.y, view_pos.z);
+        program_.SetMat4("model", model);
+        program_.SetMat4("view", view);
+        program_.SetMat4("projection", projection);
+        program_.SetVec3("cameraPos", camera_->camera_position_);
 
         //Cubes
         glBindVertexArray(cube_vao_);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, cubeTexture);
+        // glActiveTexture(GL_TEXTURE0);
+        // glBindTexture(GL_TEXTURE_2D, cubeTexture);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, skybox_texture_);
         model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
-        glUniformMatrix4fv(glGetUniformLocation(program_, "model"), 1, GL_FALSE, glm::value_ptr(model));
+        program_.SetMat4("model", model);
         glDrawArrays(GL_TRIANGLES, 0, 36);
         model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
-        glUniformMatrix4fv(glGetUniformLocation(program_, "model"), 1, GL_FALSE, glm::value_ptr(model));
+        program_.SetMat4("model", model);
         glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindVertexArray(0);
         //Floor
-        glBindVertexArray(plane_vao_);
-        glBindTexture(GL_TEXTURE_2D, floorTexture);
-        model = glm::mat4(1.0f);
-        glUniformMatrix4fv(glGetUniformLocation(program_, "model"), 1, GL_FALSE, glm::value_ptr(model));
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        // glBindVertexArray(plane_vao_);
+        // glBindTexture(GL_TEXTURE_2D, floorTexture);
+        // model = glm::mat4(1.0f);
+        // program_.SetMat4("model", model);
+        // glDrawArrays(GL_TRIANGLES, 0, 6);
 
         //Draw skybox
         glDepthFunc(GL_LEQUAL);
-        glUseProgram(skybox_program_);
+        skybox_program_.Use();
         view = glm::mat4(glm::mat3(camera_->view()));
-        glUniformMatrix4fv(glGetUniformLocation(skybox_program_, "view"), 1, GL_FALSE, glm::value_ptr(view));
-        glUniformMatrix4fv(glGetUniformLocation(skybox_program_, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-
+        skybox_program_.SetMat4("view", view);
+        skybox_program_.SetMat4("projection", projection);
         //Skybox cube
         glBindVertexArray(skybox_vao_);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_CUBE_MAP, skybox_texture_);
         glDrawArrays(GL_TRIANGLES, 0, 36);
-        glDepthFunc(GL_LESS);
-
-
         glBindVertexArray(0);
+        glDepthFunc(GL_LESS);
     }
 
     void Cubemap::OnEvent(const SDL_Event& event)
@@ -459,4 +387,3 @@ int main(int argc, char* argv[])
 
     return EXIT_SUCCESS;
 }
-

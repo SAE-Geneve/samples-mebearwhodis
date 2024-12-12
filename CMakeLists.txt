@@ -103,6 +103,9 @@ foreach(MAIN_FILE ${MAIN_FILES})
     get_filename_component(MAIN_NAME ${MAIN_FILE} NAME_WE)
     
     add_executable(${MAIN_NAME} ${MAIN_FILE}
-            include/free_camera.h)
+            include/free_camera.h
+            main/frustum.cc
+            include/frustum.h
+            include/shader.h)
     target_link_libraries(${MAIN_NAME} PUBLIC Common) 
 endforeach()
