@@ -56,7 +56,10 @@ namespace gpr5300
     {
         camera_ = new FreeCamera();
         stbi_set_flip_vertically_on_load(true);
-        model_ = Model("data/ptit_lego/msh_lego_minifigure_01.obj");
+        // model_ = Model("data/backpack/backpack.obj");
+        model_ = Model("data/pickle_uishdjrva_mid/Pickle_uishdjrva_Mid.fbx");
+        // model_ = Model("data/dark-sun-gwyndolin/source/Dark_Sun_Gwyndolin/Gwyndolin.fbx");
+        // model_ = Model("data/matilda/source/sketchfab_v002.fbx");
         diffuse_map_ = TextureFromFile("container2.png", "data/textures");
         specular_map_ = TextureFromFile("container2_specular.png", "data/textures");
         //Main program
@@ -362,7 +365,7 @@ namespace gpr5300
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, diffuse_map_);
         model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(0.02f, 0.02f, 0.02f));	// it's a bit too big for our scene, so scale it down
+        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
         glUniformMatrix4fv(glGetUniformLocation(program_, "model"), 1, GL_FALSE, glm::value_ptr(model));
         model_.Draw(program_);
 

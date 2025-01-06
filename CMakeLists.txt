@@ -54,9 +54,12 @@ file(GLOB_RECURSE DATA_FILES
             "data/*.json"
             "data/*.png"
             "data/*.jpg"
+            "data/*.jpeg"
             "data/*.bmp"
+            "data/*.dds"
             "data/*.hdr"
             "data/*.obj"
+            "data/*.fbx"
             "data/*.mtl"
             )
     foreach(DATA ${DATA_FILES})
@@ -102,10 +105,6 @@ file(GLOB MAIN_FILES main/*.cpp main/*.cc)
 foreach(MAIN_FILE ${MAIN_FILES})
     get_filename_component(MAIN_NAME ${MAIN_FILE} NAME_WE)
     
-    add_executable(${MAIN_NAME} ${MAIN_FILE}
-            include/free_camera.h
-            main/frustum.cc
-            include/frustum.h
-            include/shader.h)
+    add_executable(${MAIN_NAME} ${MAIN_FILE})
     target_link_libraries(${MAIN_NAME} PUBLIC Common) 
 endforeach()

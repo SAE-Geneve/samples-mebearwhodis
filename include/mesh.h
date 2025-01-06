@@ -26,6 +26,8 @@ struct Vertex{
     std::vector<unsigned int> indices_;
     std::vector<Texture> textures_;
 
+    [[nodiscard]] unsigned int VAO() const {return VAO_;}
+
     Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures)
     {
       this->vertices_ = vertices;
