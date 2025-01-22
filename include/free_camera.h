@@ -56,6 +56,7 @@ struct FreeCamera {
     float sensitivity_ = 0.1f;
 
     float camera_speed_ = 10.0f;
+    bool sprint_ = false;
 
     Frustum frustum_ = {};
     float z_near_;
@@ -78,9 +79,15 @@ struct FreeCamera {
         view_ = glm::lookAt(camera_position_, camera_position_ + camera_front_, camera_up_);
     }
 
+    void ToggleSprint()
+    {
+        sprint_ = !sprint_;
+    }
+
     void Move(const Camera_Movement direction, const float dt)
     {
-        float speed = camera_speed_ * dt;
+        float base_speed = camera_speed_ * dt;
+        float speed = sprint_ ? 10.0f * base_speed : base_speed;
         if (direction == FORWARD)
             {
                 camera_position_ += speed * camera_front_;

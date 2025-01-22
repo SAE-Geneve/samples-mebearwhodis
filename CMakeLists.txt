@@ -56,11 +56,15 @@ file(GLOB_RECURSE DATA_FILES
             "data/*.jpg"
             "data/*.jpeg"
             "data/*.bmp"
+            "data/*.dae"
             "data/*.dds"
             "data/*.hdr"
             "data/*.obj"
             "data/*.fbx"
             "data/*.mtl"
+            "data/*.tif"
+            "data/*.gltf"
+            "data/*.bin"
             )
     foreach(DATA ${DATA_FILES})
         get_filename_component(FILE_NAME ${DATA} NAME)

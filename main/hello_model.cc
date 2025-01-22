@@ -37,6 +37,7 @@ namespace gpr5300
         GLuint vbo_ = 0;
         GLuint ebo_ = 0;
         GLuint light_vao_ = 0;
+        unsigned int pickle_map_ = 0;
         unsigned int diffuse_map_ = -1;
         unsigned int specular_map_ = -1;
 
@@ -49,19 +50,32 @@ namespace gpr5300
         glm::vec3 light_position_ = glm::vec3(1.2f, 1.0f, 2.0f);
         glm::vec3 light_colour_ = glm::vec3(1.0f, 1.0f, 1.0f);
 
+        float model_scale_ = 1;
+
         FreeCamera* camera_ = nullptr;
     };
 
     void HelloModel::Begin()
     {
         camera_ = new FreeCamera();
+        // TODO: find why this broke everything with the fbx
         stbi_set_flip_vertically_on_load(true);
+
         // model_ = Model("data/backpack/backpack.obj");
-        model_ = Model("data/pickle_uishdjrva_mid/Pickle_uishdjrva_Mid.fbx");
-        // model_ = Model("data/dark-sun-gwyndolin/source/Dark_Sun_Gwyndolin/Gwyndolin.fbx");
+        // model_ = Model("data/pickle_fbx/Pickle_uishdjrva_Mid.fbx");
+        // model_ = Model("data/pickle_gltf/Pickle_uishdjrva_Mid.gltf");
+        // model_ = Model("data/pickle_gltf_ue/uishdjrva_tier_2.gltf");
         // model_ = Model("data/matilda/source/sketchfab_v002.fbx");
-        diffuse_map_ = TextureFromFile("container2.png", "data/textures");
-        specular_map_ = TextureFromFile("container2_specular.png", "data/textures");
+        // model_ = Model("data/Alduin/Alduin.obj");
+        // model_ = Model("data/vivi-ornitier/source/vivi_complete.fbx");
+        // model_ = Model("data/ramolis/Model.dae");
+        // model_ = Model("data/shadow_mini/Shadow.dae");
+        // model_ = Model("data/gigantic_tundra_terrain_vi3hcjw_ue_mid/vi3hcjw_tier_2.gltf");
+        // model_ = Model("data/japanese_metal_lantern_vfvjccaqx_ue_mid/vfvjccaqx_tier_2.gltf");
+        // diffuse_map_ = TextureFromFile("Pickle_uishdjrva_Mid_2K_BaseColor.jpg", "data/pickle_fbx");
+        // diffuse_map_ = TextureFromFile("container2.png", "data/textures");
+        // specular_map_ = TextureFromFile("Pickle_uishdjrva_Mid_2K_Specular.jpg", "data/pickle_fbx");
+        // specular_map_ = TextureFromFile("container2_specular.png", "data/textures");
         //Main program
         //Load shaders
         const auto vertexContent = LoadFile("data/shaders/hello_triangle/triangle.vert");
@@ -101,31 +115,31 @@ namespace gpr5300
             std::cerr << "Error while linking shader program\n";
         }
 
-        //Light program
-        //Load shaders
-        const auto lightVertexContent = LoadFile("data/shaders/hello_light/light.vert");
-        ptr = lightVertexContent.data();
-        light_vertexShader_ = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(light_vertexShader_, 1, &ptr, nullptr);
-        glCompileShader(light_vertexShader_);
-        //Check success status of shader compilation
-        glGetShaderiv(light_vertexShader_, GL_COMPILE_STATUS, &success);
-        if (!success)
-        {
-            std::cerr << "Error while loading vertex shader\n";
-        }
-        const auto lightFragmentContent = LoadFile("data/shaders/hello_light/light.frag");
-        ptr = lightFragmentContent.data();
-        light_fragmentShader_ = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(light_fragmentShader_, 1, &ptr, nullptr);
-        glCompileShader(light_fragmentShader_);
-        //Check success status of shader compilation
-
-        glGetShaderiv(light_fragmentShader_, GL_COMPILE_STATUS, &success);
-        if (!success)
-        {
-            std::cerr << "Error while loading fragment shader\n";
-        }
+        // //Light program
+        // //Load shaders
+        // const auto lightVertexContent = LoadFile("data/shaders/hello_light/light.vert");
+        // ptr = lightVertexContent.data();
+        // light_vertexShader_ = glCreateShader(GL_VERTEX_SHADER);
+        // glShaderSource(light_vertexShader_, 1, &ptr, nullptr);
+        // glCompileShader(light_vertexShader_);
+        // //Check success status of shader compilation
+        // glGetShaderiv(light_vertexShader_, GL_COMPILE_STATUS, &success);
+        // if (!success)
+        // {
+        //     std::cerr << "Error while loading vertex shader\n";
+        // }
+        // const auto lightFragmentContent = LoadFile("data/shaders/hello_light/light.frag");
+        // ptr = lightFragmentContent.data();
+        // light_fragmentShader_ = glCreateShader(GL_FRAGMENT_SHADER);
+        // glShaderSource(light_fragmentShader_, 1, &ptr, nullptr);
+        // glCompileShader(light_fragmentShader_);
+        // //Check success status of shader compilation
+        //
+        // glGetShaderiv(light_fragmentShader_, GL_COMPILE_STATUS, &success);
+        // if (!success)
+        // {
+        //     std::cerr << "Error while loading fragment shader\n";
+        // }
         //Load program/pipeline
         light_program_ = glCreateProgram();
         glAttachShader(light_program_, light_vertexShader_);
@@ -364,8 +378,11 @@ namespace gpr5300
         glUniform1i(glGetUniformLocation(program_, "material.diffuse"), 0);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, diffuse_map_);
-        model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
+        model = glm::translate(model, glm::vec3(1.0f, 0.0f, 0.0f));
+        // model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        // translate it down so it's at the center of the scene
+        model = glm::scale(model, model_scale_ * glm::vec3(1.0f, 1.0f, 1.0f));
+        // it's a bit too big for our scene, so scale it down
         glUniformMatrix4fv(glGetUniformLocation(program_, "model"), 1, GL_FALSE, glm::value_ptr(model));
         model_.Draw(program_);
 
@@ -381,18 +398,18 @@ namespace gpr5300
 
         glBindVertexArray(vao_);
         //Draw cubes
-        for (unsigned int i = 0; i < 10; i++)
-        {
-            // calculate the model matrix for each object and pass it to shader before drawing
-            auto box_model = glm::mat4(1.0f);
-            box_model = glm::translate(box_model, cubePositions[i]);
-            float angle = 20.0f * i;
-            box_model = glm::rotate(box_model, glm::radians(angle) + elapsedTime_, glm::vec3(1.0f, 0.3f, 0.5f));
+         for (unsigned int i = 0; i < 10; i++)
+         {
+             // calculate the model matrix for each object and pass it to shader before drawing
+             auto box_model = glm::mat4(1.0f);
+             box_model = glm::translate(box_model, cubePositions[i]);
+             float angle = 20.0f * i;
+             box_model = glm::rotate(box_model, glm::radians(angle) + elapsedTime_, glm::vec3(1.0f, 0.3f, 0.5f));
 
-            glUniformMatrix4fv(glGetUniformLocation(program_, "model"), 1, GL_FALSE, glm::value_ptr(box_model));
+             glUniformMatrix4fv(glGetUniformLocation(program_, "model"), 1, GL_FALSE, glm::value_ptr(box_model));
 
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
+             glDrawArrays(GL_TRIANGLES, 0, 36);
+         }
 
 
         //Draw the lamp objects
@@ -422,6 +439,17 @@ namespace gpr5300
 
     void HelloModel::OnEvent(const SDL_Event& event)
     {
+        switch (event.type)
+        {
+        case SDL_KEYDOWN:
+            if (event.key.keysym.sym == SDLK_LSHIFT)
+            {
+                camera_->ToggleSprint();
+            }
+            break;
+        default:
+            break;
+        }
         //TODO: Add zoom
     }
 
@@ -468,6 +496,7 @@ namespace gpr5300
     {
         ImGui::Begin("My Window"); // Start a new window
         //ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
+        ImGui::SliderFloat("Model Size", &model_scale_, 0.01f, 1.0f, "%.1f");
         static ImVec4 LightColour = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); // Default color
         ImGui::ColorPicker3("Light Colour", reinterpret_cast<float*>(&light_colour_));
         ImGui::End(); // End the window
@@ -482,4 +511,3 @@ int main(int argc, char* argv[])
 
     return EXIT_SUCCESS;
 }
-
