@@ -10,7 +10,7 @@
 #include "engine.h"
 #include "file_utility.h"
 #include "free_camera.h"
-#include "model_anim.h"
+#include "model.h"
 #include "scene.h"
 #include "shader.h"
 

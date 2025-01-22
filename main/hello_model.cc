@@ -63,7 +63,7 @@ namespace gpr5300
 
         // model_ = Model("data/backpack/backpack.obj");
         // model_ = Model("data/pickle_fbx/Pickle_uishdjrva_Mid.fbx");
-        // model_ = Model("data/pickle_gltf/Pickle_uishdjrva_Mid.gltf");
+        model_ = Model("data/pickle_gltf/Pickle_uishdjrva_Mid.gltf");
         // model_ = Model("data/pickle_gltf_ue/uishdjrva_tier_2.gltf");
         // model_ = Model("data/matilda/source/sketchfab_v002.fbx");
         // model_ = Model("data/Alduin/Alduin.obj");
