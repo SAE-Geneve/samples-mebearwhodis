@@ -46,7 +46,7 @@ namespace gpr5300
         glEnable(GL_DEPTH_TEST);
 
         shader_ = Shader("data/shaders/model/model.vert", "data/shaders/model/model.frag");
-        model_ = Model("data/Alduin/Alduin.obj");
+        model_ = Model("data/pickle_gltf/Pickle_uishdjrva_Mid.gltf");
     }
 
     void HelloModelClean::End()
@@ -72,7 +72,7 @@ namespace gpr5300
         shader_.SetMat4("view", view);
 
         const glm::vec3 view_pos = camera_->camera_position_;
-        shader_.SetVec3("viewPos", glm::vec3(view_pos.x, view_pos.y, view_pos.z));
+        shader_.SetVec3("viewPos", view_pos);
 
         //Draw model
         auto model = glm::mat4(1.0f);

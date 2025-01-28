@@ -29,13 +29,9 @@ namespace gpr5300
         void UpdateCamera(const float dt) override;
 
     private:
-        Shader program_ = {};
-        GLuint vertexShader_ = 0;
-        GLuint fragmentShader_ = 0;
+        Shader shader_ = {};
 
-        Shader skybox_program_ = {};
-        GLuint skybox_vertexShader_ = 0;
-        GLuint skybox_fragmentShader_ = 0;
+        Shader skybox_shader_ = {};
 
         GLuint cube_vao_ = 0;
         GLuint cube_vbo_ = 0;
@@ -64,8 +60,8 @@ namespace gpr5300
         camera_ = new FreeCamera();
 
         //Main program
-        program_ = Shader("data/shaders/cubemaps/reflection.vert", "data/shaders/cubemaps/reflection.frag");
-        skybox_program_ = Shader("data/shaders/cubemaps/cubemaps.vert", "data/shaders/cubemaps/cubemaps.frag");
+        shader_ = Shader("data/shaders/cubemaps/reflection.vert", "data/shaders/cubemaps/reflection.frag");
+        skybox_shader_ = Shader("data/shaders/cubemaps/cubemaps.vert", "data/shaders/cubemaps/cubemaps.frag");
 
 
         // Configure global opengl state
@@ -200,9 +196,11 @@ namespace gpr5300
         // cube VAO
         glGenVertexArrays(1, &cube_vao_);
         glBindVertexArray(cube_vao_);
+
         glGenBuffers(1, &cube_vbo_);
         glBindBuffer(GL_ARRAY_BUFFER, cube_vbo_);
         glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertices_), &cube_vertices_, GL_STATIC_DRAW);
+
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(1);
@@ -210,10 +208,12 @@ namespace gpr5300
 
         // plane VAO
         glGenVertexArrays(1, &plane_vao_);
-        glGenBuffers(1, &plane_vbo_);
         glBindVertexArray(plane_vao_);
+
+        glGenBuffers(1, &plane_vbo_);
         glBindBuffer(GL_ARRAY_BUFFER, plane_vbo_);
         glBufferData(GL_ARRAY_BUFFER, sizeof(plane_vertices_), &plane_vertices_, GL_STATIC_DRAW);
+
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(1);
@@ -221,10 +221,12 @@ namespace gpr5300
 
         //skybox VAO
         glGenVertexArrays(1, &skybox_vao_);
-        glGenBuffers(1, &skybox_vbo_);
         glBindVertexArray(skybox_vao_);
+
+        glGenBuffers(1, &skybox_vbo_);
         glBindBuffer(GL_ARRAY_BUFFER, skybox_vbo_);
         glBufferData(GL_ARRAY_BUFFER, sizeof(skybox_vertices_), &skybox_vertices_, GL_STATIC_DRAW);
+
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
@@ -247,11 +249,11 @@ namespace gpr5300
 
         // shader configuration
         // --------------------
-        program_.Use();
-        program_.SetInt("skybox", 0);
+        shader_.Use();
+        shader_.SetInt("skybox", 0);
 
-        skybox_program_.Use();
-        skybox_program_.SetInt("skybox", 0);
+        skybox_shader_.Use();
+        skybox_shader_.SetInt("skybox", 0);
 
         // draw as wireframe
         //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -260,11 +262,8 @@ namespace gpr5300
     void Cubemap::End()
     {
         //Unload program/pipeline
-        program_.Delete();
-        skybox_program_.Delete();
-
-        glDeleteShader(vertexShader_);
-        glDeleteShader(fragmentShader_);
+        shader_.Delete();
+        skybox_shader_.Delete();
 
         glDeleteVertexArrays(1, &cube_vao_);
         glDeleteVertexArrays(1, &plane_vao_);
@@ -279,16 +278,16 @@ namespace gpr5300
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        program_.Use();
+        shader_.Use();
 
         auto model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
         auto view = camera_->view();
         auto projection = glm::perspective(glm::radians(45.0f), (float)1280 / (float)720, 0.1f, 100.0f);
 
-        program_.SetMat4("model", model);
-        program_.SetMat4("view", view);
-        program_.SetMat4("projection", projection);
-        program_.SetVec3("cameraPos", camera_->camera_position_);
+        shader_.SetMat4("model", model);
+        shader_.SetMat4("view", view);
+        shader_.SetMat4("projection", projection);
+        shader_.SetVec3("cameraPos", camera_->camera_position_);
 
         //Cubes
         glBindVertexArray(cube_vao_);
@@ -296,11 +295,11 @@ namespace gpr5300
         // glBindTexture(GL_TEXTURE_2D, cubeTexture);
         glBindTexture(GL_TEXTURE_CUBE_MAP, skybox_texture_);
         model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
-        program_.SetMat4("model", model);
+        shader_.SetMat4("model", model);
         glDrawArrays(GL_TRIANGLES, 0, 36);
         model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
-        program_.SetMat4("model", model);
+        shader_.SetMat4("model", model);
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
         //Floor
@@ -312,10 +311,10 @@ namespace gpr5300
 
         //Draw skybox
         glDepthFunc(GL_LEQUAL);
-        skybox_program_.Use();
+        skybox_shader_.Use();
         view = glm::mat4(glm::mat3(camera_->view()));
-        skybox_program_.SetMat4("view", view);
-        skybox_program_.SetMat4("projection", projection);
+        skybox_shader_.SetMat4("view", view);
+        skybox_shader_.SetMat4("projection", projection);
         //Skybox cube
         glBindVertexArray(skybox_vao_);
         glActiveTexture(GL_TEXTURE0);

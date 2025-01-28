@@ -24,32 +24,22 @@ out VS_OUT {
 void main()
 {
     vec4 totalPosition = vec4(0.0f);
-    vec3 totalNormal = vec3(0.0f);
-
-    // Skinning calculations
-    for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
-    {
+    for (int i = 0; i < MAX_BONE_INFLUENCE; i++) {
         if (boneIds[i] == -1) continue;
-        if (boneIds[i] >= MAX_BONES)
-        {
+        if (boneIds[i] >= MAX_BONES) {
             totalPosition = vec4(pos, 1.0f);
-            totalNormal = norm;
             break;
         }
-
         vec4 localPosition = finalBonesMatrices[boneIds[i]] * vec4(pos, 1.0f);
         totalPosition += localPosition * weights[i];
-
-        vec3 localNormal = mat3(finalBonesMatrices[boneIds[i]]) * norm;
-        totalNormal += localNormal * weights[i];
     }
 
-    // Output values for the fragment shader
-    vs_out.FragPos = vec3(model * totalPosition);
-    vs_out.Normal = transpose(inverse(mat3(model))) * totalNormal;
+    if (totalPosition == vec4(0.0f))
+    totalPosition = vec4(pos, 1.0f);
+
+    vs_out.FragPos = vec3(model * vec4(pos, 1.0));
+    vs_out.Normal = transpose(inverse(mat3(model))) * norm;
     vs_out.TexCoords = tex;
     vs_out.FragPosLightSpace = lightSpaceMatrix * vec4(vs_out.FragPos, 1.0);
-
-    mat4 viewModel = view * model;
-    gl_Position = projection * viewModel * totalPosition;
+    gl_Position = projection * view * totalPosition;
 }

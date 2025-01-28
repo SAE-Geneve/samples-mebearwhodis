@@ -12,6 +12,7 @@
 #include "engine.h"
 #include "file_utility.h"
 #include "free_camera.h"
+#include "global_utility.h"
 #include "model_anim.h"
 #include "scene.h"
 #include "shader.h"
@@ -46,6 +47,7 @@ namespace gpr5300
         float animation_speed_ = 1.0f;
         float model_scale_ = 1.0f;
 
+        const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
         glm::vec3 light_position_ = glm::vec3(-2.0f, 4.0f, -1.0f);
         FreeCamera* camera_ = nullptr;
     };
@@ -57,11 +59,12 @@ namespace gpr5300
         glEnable(GL_DEPTH_TEST);
 
         // Shaders
-        shader_ = Shader("data/shaders/combined/combined.vert", "data/shaders/combined/combined.frag"); // Main scene shader
-        shader_depth_ = Shader("data/shaders/shadow_map/shadow_map.vert", "data/shaders/shadow_map/shadow_map.frag");
+        // Main scene shader
+        shader_ = Shader("data/shaders/combined/combined.vert", "data/shaders/combined/combined.frag");
         // Shadow depth shader
-        shader_quad_ = Shader("data/shaders/shadow_map/debug_quad.vert", "data/shaders/shadow_map/debug_quad.frag");
+        shader_depth_ = Shader("data/shaders/shadow_map/shadow_depth.vert","data/shaders/shadow_map/shadow_depth.frag");
         // Quad shader (if needed for post-processing)
+        shader_quad_ = Shader("data/shaders/shadow_map/debug_quad.vert", "data/shaders/shadow_map/debug_quad.frag");
 
         // Animated Model
         model_ = ModelAnim("data/Twist_Dance/Twist_Dance.dae");
@@ -108,6 +111,10 @@ namespace gpr5300
         glReadBuffer(GL_NONE);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+        shader_.Use();
+        shader_.SetInt("diffuseTexture", 0);
+        shader_.SetInt("shadowMap", 1);
+
         // Load textures
         ground_texture_ = TextureFromFile("wood.png", "data/textures");
     }
@@ -137,7 +144,7 @@ namespace gpr5300
         glm::mat4 lightSpaceMatrix = lightProjection * lightView;
         shader_depth_.SetMat4("lightSpaceMatrix", lightSpaceMatrix);
 
-        glm::mat4 model = glm::mat4(1.0f);
+        auto model = glm::mat4(1.0f);
         shader_depth_.SetMat4("model", model);
         glBindVertexArray(plane_vao_);
         glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -148,29 +155,35 @@ namespace gpr5300
         glViewport(0, 0, 1280, 720);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         shader_.Use();
-        shader_.SetMat4("lightSpaceMatrix", lightSpaceMatrix);
-        shader_.SetVec3("lightPos", light_position_);
-        shader_.SetVec3("viewPos", camera_->camera_position_);
 
-        // Set shadow map
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, depth_map_texture_);
-        shader_.SetInt("shadowMap", 1);
-
-        // Render Plane
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, ground_texture_);
-        shader_.SetMat4("model", model);
-        glBindVertexArray(plane_vao_);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-
-        // Render Animated Model
         auto view = camera_->view();
         auto projection = glm::perspective(glm::radians(45.0f), 1280.0f / 720.0f, 0.1f, 100.0f);
         shader_.SetMat4("view", view);
         shader_.SetMat4("projection", projection);
-        shader_.SetMat4("model", glm::scale(glm::mat4(1.0f), glm::vec3(model_scale_)));
+
+        shader_.SetMat4("lightSpaceMatrix", lightSpaceMatrix);
+        shader_.SetVec3("lightPos", light_position_);
+        shader_.SetVec3("viewPos", camera_->camera_position_);
+
+        // Render Plane
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, ground_texture_);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, depth_map_texture_);
+        // renderScene(shader_, plane_vao_);
+
+        // Render Animated Model
+        auto transforms = animator_.GetFinalBoneMatrices();
+        for (int i = 0; i < transforms.size(); ++i)
+        {
+            shader_.SetMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
+        }
+        model = glm::translate(model, glm::vec3(0.0f, -0.4f, 0.0f));
+        model = glm::scale(model, model_scale_ * glm::vec3(1.0f, 1.0f, 1.0f));
+
+        shader_.SetMat4("model", model);
         model_.Draw(shader_.id_);
+
     }
 
 
