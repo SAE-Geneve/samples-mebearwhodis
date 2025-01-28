@@ -45,8 +45,8 @@ namespace gpr5300
         // stbi_set_flip_vertically_on_load(true);
         glEnable(GL_DEPTH_TEST);
 
-        shader_ = Shader("data/shaders/hello_anim/hello_anim.vert", "data/shaders/hello_anim/hello_anim.frag");
-        model_ = Model("data/pickle_gltf/Pickle_uishdjrva_Mid.gltf");
+        shader_ = Shader("data/shaders/model/model.vert", "data/shaders/model/model.frag");
+        model_ = Model("data/Alduin/Alduin.obj");
     }
 
     void HelloModelClean::End()

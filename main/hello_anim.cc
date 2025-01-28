@@ -7,10 +7,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "animation.h"
+#include "animator.h"
 #include "engine.h"
 #include "file_utility.h"
 #include "free_camera.h"
-#include "model.h"
+#include "model_anim.h"
 #include "scene.h"
 #include "shader.h"
 
@@ -29,7 +31,10 @@ namespace gpr5300
     private:
         Shader shader_ = {};
 
-        Model model_;
+        ModelAnim model_;
+        Animation animation_ = {};
+        Animator animator_ = {};
+        float animation_speed_ = 1.0f;
 
         float elapsedTime_ = 0.0f;
 
@@ -45,7 +50,10 @@ namespace gpr5300
         glEnable(GL_DEPTH_TEST);
 
         shader_ = Shader("data/shaders/hello_anim/hello_anim.vert", "data/shaders/hello_anim/hello_anim.frag");
-        model_ = Model("data/vampire/dancing_vampire.dae");
+        model_ = ModelAnim("data/Twist_Dance/Twist_Dance.dae");
+        animation_ = Animation("data/Twist_Dance/Twist_Dance.dae", &model_);
+        // model_ = ModelAnim("data/jirachi/Model.dae");
+        animator_ = Animator(&animation_);
     }
 
     void HelloAnim::End()
@@ -58,6 +66,9 @@ namespace gpr5300
     {
         UpdateCamera(dt);
         elapsedTime_ += dt;
+
+
+        animator_.UpdateAnimation(animation_speed_ * dt);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer
 
@@ -73,9 +84,15 @@ namespace gpr5300
         const glm::vec3 view_pos = camera_->camera_position_;
         shader_.SetVec3("viewPos", glm::vec3(view_pos.x, view_pos.y, view_pos.z));
 
+        auto transforms = animator_.GetFinalBoneMatrices();
+        for (int i = 0; i < transforms.size(); ++i)
+        {
+            shader_.SetMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
+        }
+
         //Draw model
         auto model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(1.0f, 0.0f, 0.0f));
+        model = glm::translate(model, glm::vec3(0.0f, -0.4f, 0.0f));
         model = glm::scale(model, model_scale_ * glm::vec3(1.0f, 1.0f, 1.0f));
 
         shader_.SetMat4("model", model);
@@ -143,7 +160,8 @@ namespace gpr5300
     {
         ImGui::Begin("My Window"); // Start a new window
         //ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
-        ImGui::SliderFloat("Model Size", &model_scale_, 0.01f, 1.0f, "%.1f");
+        ImGui::SliderFloat("Model Size", &model_scale_, 0.00f, 1.0f, "%.05f");
+        ImGui::SliderFloat("Animation speed", &animation_speed_, 0.5f, 5.0f, "%.5f");
         static ImVec4 LightColour = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); // Default color
         ImGui::End(); // End the window
     }

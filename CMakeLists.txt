@@ -65,6 +65,7 @@ file(GLOB_RECURSE DATA_FILES
             "data/*.tif"
             "data/*.gltf"
             "data/*.bin"
+            "data/*.blend"
             )
     foreach(DATA ${DATA_FILES})
         get_filename_component(FILE_NAME ${DATA} NAME)
